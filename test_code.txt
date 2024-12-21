@@ -1,0 +1,5 @@
+int x = 10;
+float y;
+double z = 3.14;
+char c = 'A';
+bool flag = true;
