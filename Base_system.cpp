@@ -67,8 +67,10 @@ int Queue::front()
 {
     if(listhead != NULL)
     {return listhead->data;}
-    else{
+    else
+    {
         cout<<"EMPTY"<<endl;
+        return -1;
     }
 }
 
@@ -82,9 +84,9 @@ class User
     friend void add_to_file(vector<User>& users,const string& filename);
     friend void add_user(vector<User>& users);
     friend void load_users(vector<User>& users,const string& filename);
-    friend void login(vector<User>& users, Queue& q);
+    friend User* login(vector<User>& users, Queue& q);
     friend void logout(User& users);
-    friend void codeloop(User& user);
+    friend void codeloop(User& u);
 };
 int User::ID = 0;
 
@@ -104,6 +106,7 @@ void add_to_file(vector<User>& users,const string& filename)
     ofstream file(filename, ios::app);
     User& lastuser = users.back();
     file<<"ID:"<<lastuser.ID<<"|"<<"Username:"<<lastuser.name<<"|"<<"Password:"<<lastuser.password<<endl;
+    cout<<"Successfully registered"<<endl;
 }
 
 void add_user(vector<User>& users)
@@ -118,6 +121,7 @@ void add_user(vector<User>& users)
     {
         new_user.ID += 1;
     }
+    cin.ignore();
     cout<<"Please set your name: "<<endl;
     getline(cin,new_user.name);
     for(const auto& u: users)
@@ -164,10 +168,11 @@ void load_users(vector<User>& users,const string& filename)
     }
 }
 
-void login(vector<User>& users, Queue& q)
+User* login(vector<User>& users, Queue& q)
 {
     User temp;
     cout<<"Please enter your username: ";
+    cin.ignore();
     getline(cin,temp.name);
     for(auto& u: users)
     {
@@ -182,12 +187,12 @@ void login(vector<User>& users, Queue& q)
                     cout<<"You are now logged in"<<endl;
                     u.status = true;
                     q.push(u.ID);
-                    return;
+                    return &u;
                 }
                 else if(temp.password == "0")
                 {
                     cout<<"exited the login system"<<endl;
-                    return;
+                    return nullptr;
                 }
                 else
                 {
@@ -198,11 +203,41 @@ void login(vector<User>& users, Queue& q)
             }
         }
     }
+    cout<<"User Not Found"<<endl;
+    return nullptr;
 }
 
-void codeloop(User& user)
+void logout(User& user)
 {
-    
+    int opt;
+    cout<<"Are you sure you want to logout?"<<endl;
+    cout<<"Press 1 if you want to continue with the logout procedure"<<endl;
+    cout<<"Otherwise press 0 to leave the logout procedure"<<endl;
+    cin>>opt;
+    if(opt == 1)
+    {
+        cout<<"You are now logged out"<<endl;
+        user.status = false;
+        return;
+    }
+    else
+    {
+        cout<<"You have chosen not to logout"<<endl;
+        return;
+    }
+}
+
+void codeloop(User& u)
+{
+    if(u.status == false)
+    {
+        cout<<u.name<<" is not logged in"<<endl;
+    }
+    if(u.status == true)
+    {
+        cout<<"insider codeloop"<<endl;
+        //user will add their code here for complexity analysis
+    }
 }
 
 int main()
@@ -210,22 +245,33 @@ int main()
     vector<User> users;
     Queue logbook;
     fstream MyFile("userdata.txt", ios::in | ios::out | ios::app);
-    int choice = 0;
-    cout<<"Please enter the number corresponding to the action you want to perform"<<endl;
-    cout<<"Please enter 1 to create an account"<<endl;
-    cout<<"Please enter 2 to login"<<endl;
-    cout<<"Please enter 3 to logout"<<endl;
-    cout<<"Please enter 4 to upload code"<<endl;
-    cin>>choice;
+    load_users(users,"userdata.txt");
+    int choice = -1;
+    
     while(choice!=0)
     {
+        cout<<"Please enter the number corresponding to the action you want to perform"<<endl;
+        cout<<"Please enter 1 to create an account"<<endl;
+        cout<<"Please enter 2 to login and use the system"<<endl;
+        cout<<"Please enter 3 to logout"<<endl;
+        cout<<"Please enter 4 to upload code for complexity analysis"<<endl;
+        cin>>choice;
+        User* logged;
         if(choice == 1)
         {
             add_user(users);
         }
         if(choice == 2)
         {
-            login(users,logbook);
+            logged = login(users,logbook);
+        }
+        if(choice == 3)
+        {
+            logout(*logged);
+        }
+        if(choice == 4)
+        {
+            codeloop(*logged);
         }
 
     }
